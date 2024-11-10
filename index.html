@@ -11,6 +11,10 @@
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
 
 <style>
+.controls {
+  padding-top: 1em;
+  font-size: 1.2em;
+}
 </style>
   
 </head>
@@ -40,6 +44,12 @@
         <h3>Starting note: <span id="startingNote">?</span></h3>
       </div>
     </div>
+  
+    <div class="controls">
+      <input type="checkbox" class="form-check-input" id="repeatDelay">
+      <label class="form-check-label" for="repeatDelay">Delay 0.5s when I click Repeat</label>
+    </div>
+
   </div>
 
 <script>
@@ -87,16 +97,16 @@ const guitarNotes = [
     // TODO: there are more, but that's good enough for now
   ];
 
-function play(note, offset=0) {
+function playNote(note, offset=0) {
   const releaseDelay = 0.45;
   sampler.triggerAttack(note, "+" + offset.toString());
   sampler.triggerRelease(note, "+" + (offset + releaseDelay).toString());
 }
 
-function playNotes(notes) {
+function playNotes(notes, initialDelay=0) {
   const waitTime = 0.75;
   for (let i = 0; i < notes.length; i++) {
-    play(notes[i], waitTime*i);
+    playNote(notes[i], initialDelay + waitTime*i);
   }
 }
 
@@ -196,7 +206,8 @@ function create() {
 }
 
 function repeat() {
-  playNotes(_notes);
+  let delay = document.getElementById("repeatDelay").checked ? 0.5 : 0;
+  playNotes(_notes, delay);
 }
 
 window.addEventListener('DOMContentLoaded', (event) => {
@@ -204,6 +215,7 @@ window.addEventListener('DOMContentLoaded', (event) => {
   document.getElementById("repeat").onclick = repeat;
 
   document.getElementById("selectScale").value = "random";
+  document.getElementById("repeatDelay").checked = true;
 });
 </script>
 </body>
