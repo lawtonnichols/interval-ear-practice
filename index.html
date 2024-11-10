@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+<title>Interval Ear Practice</title>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/tone/15.1.3/Tone.js" integrity="sha512-l/S587UA2X7JyCkDqZiEX+4OC6Hp8FC0PE1MFi3+KFLk3n1lxQAtSq8YTZ4ig2YFpJal2Jhz3H3iIFyv3KScFA==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+<script src="https://cdn.jsdelivr.net/npm/tonal@6.3.0/browser/tonal.min.js" integrity="sha256-mWEaqdF7S1IW+fTGqHm/WCN3vitKOWbLuyeTXOUtxBM=" crossorigin="anonymous"></script>
+
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
+
+<style>
+</style>
+  
+</head>
+
+<body>
+  <div class="container">
+    <h1 class="display-1">Interval Ear Practice</h1>
+
+    <div class="row row-cols-auto align-items-center">
+      <div class="col">
+        <select id="selectScale" class="form-select">
+          <option value="random">Random Scale</option>
+          <option value="pentatonic">Pentatonic</option>
+          <option value="ionian">Ionian</option>
+          <option value="aeolian">Aeolian</option>
+          <option value="major blues">Major Blues</option>
+          <option value="minor blues">Minor Blues</option>
+        </select>
+      </div>
+      <div class="col">
+    <button id="create" class="btn btn-primary btn-lg">Create</button>
+      </div>
+      <div class="col">
+    <button id="repeat" class="btn btn-primary btn-lg">Repeat</button>
+      </div>
+      <div class="col">
+        <h3>Starting note: <span id="startingNote">?</span></h3>
+      </div>
+    </div>
+  </div>
+
+<script>
+const sampler = new Tone.Sampler({
+  urls: {
+    A0: "A0.mp3",
+    C1: "C1.mp3",
+    "D#1": "Ds1.mp3",
+    "F#1": "Fs1.mp3",
+    A1: "A1.mp3",
+    C2: "C2.mp3",
+    "D#2": "Ds2.mp3",
+    "F#2": "Fs2.mp3",
+    A2: "A2.mp3",
+    C3: "C3.mp3",
+    "D#3": "Ds3.mp3",
+    "F#3": "Fs3.mp3",
+    A3: "A3.mp3",
+    C4: "C4.mp3",
+    "D#4": "Ds4.mp3",
+    "F#4": "Fs4.mp3",
+    A4: "A4.mp3",
+    C5: "C5.mp3",
+    "D#5": "Ds5.mp3",
+    "F#5": "Fs5.mp3",
+    A5: "A5.mp3",
+    C6: "C6.mp3",
+    "D#6": "Ds6.mp3",
+    "F#6": "Fs6.mp3",
+    A6: "A6.mp3",
+    C7: "C7.mp3",
+    "D#7": "Ds7.mp3",
+    "F#7": "Fs7.mp3",
+    A7: "A7.mp3",
+    C8: "C8.mp3",
+  },
+  release: 1,
+  baseUrl: "./salamander/",
+}).toDestination();
+
+const guitarNotes = [
+    "E2", "E#2", "Fb2", "F2", "F#2", "Gb2", "G2", "G#2", 
+    "Ab3", "A3", "A#3", "Bb3", "B3", "B#3", "Cb3", "C3", "C#3", "Db3", "D3", "D#3", "Eb3", "E3", "E#3", "Fb3", "F3", "F#3", "Gb3", "G3", "G#3", 
+    "Ab4", "A4", "A#4", "Bb4", "B4", "B#4", "Cb4", "C4", "C#4", "Db4", "D4", "D#4", "Eb4", "E4", "E#4", "Fb4", "F4", "F#4", "Gb4", "G4", // up to 12th fret on G string 
+    // TODO: there are more, but that's good enough for now
+  ];
+
+function play(note, offset=0) {
+  const releaseDelay = 0.45;
+  sampler.triggerAttack(note, "+" + offset.toString());
+  sampler.triggerRelease(note, "+" + (offset + releaseDelay).toString());
+}
+
+function playNotes(notes) {
+  const waitTime = 0.75;
+  for (let i = 0; i < notes.length; i++) {
+    play(notes[i], waitTime*i);
+  }
+}
+
+function randomElement(arr) {
+  return arr[Math.floor(Math.random() * arr.length)];
+}
+
+function shuffle(array) {
+  let currentIndex = array.length;
+
+  // While there remain elements to shuffle...
+  while (currentIndex != 0) {
+
+    // Pick a remaining element...
+    let randomIndex = Math.floor(Math.random() * currentIndex);
+    currentIndex--;
+
+    // And swap it with the current element.
+    [array[currentIndex], array[randomIndex]] = [
+      array[randomIndex], array[currentIndex]];
+  }
+}
+
+function applyToPairs(arr, func) {
+  const result = [];
+  for (let i = 0; i < arr.length - 1; i++) {
+    result.push(func(arr[i], arr[i + 1]));
+  }
+  return result;
+}
+
+function pickNotes(numNotesToPick, whichScale="random") {
+  const scales = [
+    "pentatonic", 
+    "ionian", "dorian", "lydian", "mixolydian", "phrygian", "aeolian", "locrian",
+    "major blues", "minor blues", "melodic minor", "harmonic minor", "bebop", "diminished"
+    // more at https://github.com/tonaljs/tonal/blob/aa083dd4186a52127863dfae1cfca169d7c52a2e/packages/scale-type/data.ts
+  ];
+
+  const notes = [
+    "Ab", "A", "A#", 
+    "Bb", "B", "B#", 
+    "Cb", "C", "C#", 
+    "Db", "D", "D#", 
+    "Eb", "E", "E#", 
+    "Fb", "F", "F#", 
+    "Gb", "G", "G#", 
+  ];
+
+  let randomScale = randomElement(scales);
+  if (whichScale != "random") randomScale = whichScale;
+  let randomNote = randomElement(notes);
+  let s = Tonal.Scale.get(`${randomNote} ${randomScale}`);
+
+  // repeat the notes from 2 to 5
+  let notesWithNums = [].concat(s.notes.map(x => x + "2"),
+                                s.notes.map(x => x + "3"),
+                                s.notes.map(x => x + "4"),
+                                s.notes.map(x => x + "5"));
+  let guitarNotesOnly = notesWithNums.filter(x => guitarNotes.includes(x) || guitarNotes.includes(Tonal.Note.simplify(x) || guitarNotes.includes(Tonal.Note.enharmonic(x))));
+
+  console.log(s.name, s.notes);
+  // console.log(notesWithNums);
+  // console.log(guitarNotesOnly);
+
+
+  const maxSemitones = 12; // max interval is a perfect octave
+  let res = Array.from(guitarNotesOnly);
+  shuffle(res);
+  let semitoneDiffs = applyToPairs(res, (x, y) => Tonal.Interval.semitones(Tonal.Note.distance(x, y)));
+
+  function badShuffle(arr, n) {
+    for (let i = 0; i < n-1; i++) {
+      if (Math.abs(arr[i]) > maxSemitones) return true;
+    }
+    return false;
+  }
+
+  while (badShuffle(semitoneDiffs, numNotesToPick)) {
+    shuffle(res);
+    semitoneDiffs = applyToPairs(res, (x, y) => Tonal.Interval.semitones(Tonal.Note.distance(x, y)));
+  }
+
+  res = res.slice(0, numNotesToPick);
+  console.log(res);
+
+  return res;
+}
+
+let _notes = [];
+function create() {
+  _notes = pickNotes(4, document.getElementById("selectScale").value);
+  playNotes(_notes);
+
+  let startingNote = Tonal.Note.simplify(_notes[0]);
+  document.getElementById("startingNote").innerHTML = startingNote;
+}
+
+function repeat() {
+  playNotes(_notes);
+}
+
+window.addEventListener('DOMContentLoaded', (event) => {
+  document.getElementById("create").onclick = create;
+  document.getElementById("repeat").onclick = repeat;
+
+  document.getElementById("selectScale").value = "random";
+});
+</script>
+</body>
+</html>
