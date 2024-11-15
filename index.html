@@ -27,7 +27,8 @@
       <div class="col">
         <select id="selectScale" class="form-select">
           <option value="random">Random Scale</option>
-          <option value="pentatonic">Pentatonic</option>
+          <option value="pentatonic">Major Pentatonic</option>
+          <option value="minor pentatonic">Minor Pentatonic</option>
           <option value="ionian">Ionian</option>
           <option value="aeolian">Aeolian</option>
           <option value="major blues">Major Blues</option>
@@ -140,7 +141,7 @@ function applyToPairs(arr, func) {
 
 function pickNotes(numNotesToPick, whichScale="random") {
   const scales = [
-    "pentatonic", 
+    "pentatonic", "minor pentatonic",
     "ionian", "dorian", "lydian", "mixolydian", "phrygian", "aeolian", "locrian",
     "major blues", "minor blues", "melodic minor", "harmonic minor", "bebop", "diminished"
     // more at https://github.com/tonaljs/tonal/blob/aa083dd4186a52127863dfae1cfca169d7c52a2e/packages/scale-type/data.ts
